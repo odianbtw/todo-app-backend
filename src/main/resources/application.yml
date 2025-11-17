@@ -1,0 +1,28 @@
+
+spring:
+  application:
+    name: todo
+  datasource:
+    url: jdbc:postgresql://localhost:5432/todo
+    username: todo
+    password: todo
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    default-schema: filmio
+    locations: classpath:/db/migration/postgres
+    user: todo
+    password: todo
+    url: jdbc:postgresql://localhost:5432/todo
+
+
+jwt:
+  secret: de04d58dc5ccc4b9671c3627fb8d626fe4a15810bc1fe3e724feea761965fb71
