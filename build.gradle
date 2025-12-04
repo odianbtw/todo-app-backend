@@ -5,7 +5,7 @@ plugins {
     id 'org.openapi.generator' version '7.16.0'
 }
 
-group = 'com.todo'
+group = 'com.test'
 version = '0.0.1-SNAPSHOT'
 
 java {
@@ -79,9 +79,9 @@ openApiGenerate {
     generatorName = "spring"
     inputSpec = "$projectDir/src/main/resources/openapi.yaml"
     outputDir = "$buildDir/generated"
-    apiPackage = "com.todo.api.controller"
-    modelPackage = "com.todo.api.model"
-    invokerPackage = "com.todo.api"
+    apiPackage = "com.test.todo.api.controller"
+    modelPackage = "com.test.todo.api.model"
+    invokerPackage = "com.test.todo.api"
     configOptions = [
             library                       : "spring-boot",
             dateLibrary                   : "java8",

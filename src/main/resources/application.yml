@@ -1,4 +1,8 @@
 
+server:
+  tomcat:
+    relaxed-query-chars: "[,]"
+
 spring:
   application:
     name: todo
@@ -17,7 +21,7 @@ spring:
         format_sql: true
   flyway:
     enabled: true
-    default-schema: filmio
+    default-schema: todo
     locations: classpath:/db/migration/postgres
     user: todo
     password: todo
