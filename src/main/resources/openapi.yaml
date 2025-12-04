@@ -1,0 +1,694 @@
+openapi: 3.0.0
+info:
+  title: Todo
+  description: Todo
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8080'
+tags:
+  - name: Auth
+  - name: Users
+  - name: Tasks
+paths:
+  /v1/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user account
+      operationId: register
+      security: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserAccountRequestV1'
+      responses:
+        201:
+          description: User account created successfully
+        400:
+          $ref: '#/components/responses/BadRequestResponseV1'
+        409:
+          $ref: '#/components/responses/ConflictResponseV1'
+        429:
+          $ref: '#/components/responses/TooManyRequestsResponseV1'
+  /v1/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login
+      operationId: login
+      security: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequestV1'
+      responses:
+        200:
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseV1'
+        400:
+          $ref: '#/components/responses/BadRequestResponseV1'
+        404:
+          $ref: '#/components/responses/NotFoundResponseV1'
+        429:
+          $ref: '#/components/responses/TooManyRequestsResponseV1'
+  /v1/auth/reset:
+    post:
+      tags:
+        - Auth
+      summary: Create reset password token
+      operationId: crateResetPasswordToken
+      security: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePasswordResetTokenRequestV1'
+      responses:
+        200:
+          description: Reset token was send to email
+        400:
+          $ref: '#/components/responses/BadRequestResponseV1'
+        404:
+          $ref: '#/components/responses/NotFoundResponseV1'
+        429:
+          $ref: '#/components/responses/TooManyRequestsResponseV1'
+    put:
+      tags:
+        - Auth
+      summary: Reset password
+      operationId: resetPassword
+      security: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestV1'
+      responses:
+        204:
+          description: Successfully reset password
+        400:
+          $ref: '#/components/responses/BadRequestResponseV1'
+        404:
+          $ref: '#/components/responses/NotFoundResponseV1'
+        429:
+          $ref: '#/components/responses/TooManyRequestsResponseV1'
+  /v1/auth/refresh:
+    post:
+      tags:
+        - Auth
+      summary: Generate new access token via refresh token
+      operationId: refresh
+      security: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateAccessTokenRequestV1'
+      responses:
+        200:
+          description: Successfully generated new access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateAccessTokenResponseV1'
+        400:
+          $ref: '#/components/responses/BadRequestResponseV1'
+        401:
+          $ref: '#/components/responses/UnauthorizedResponseV1'
+        429:
+          $ref: '#/components/responses/TooManyRequestsResponseV1'
+  /v1/users/me:
+    get:
+      tags:
+        - Users
+      summary: Get info about user itself
+      operationId: getUserMe
+      responses:
+        200:
+          description: Successfully found user me
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRepresentationV1'
+        401:
+          $ref: '#/components/responses/UnauthorizedResponseV1'
+        429:
+          $ref: '#/components/responses/TooManyRequestsResponseV1'
+    patch:
+      tags:
+        - Users
+      summary: Change user data
+      operationId: updateUserMe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserMeV1'
+      responses:
+        204:
+          description: Successfully changed user's info
+        400:
+          $ref: '#/components/responses/BadRequestResponseV1'
+        401:
+          $ref: '#/components/responses/UnauthorizedResponseV1'
+        409:
+          $ref: '#/components/responses/ConflictResponseV1'
+        429:
+          $ref: '#/components/responses/TooManyRequestsResponseV1'
+  /v1/users/me/password:
+    patch:
+      tags:
+        - Users
+      summary: Change user's password
+      operationId: changeUserMePassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordV1'
+      responses:
+        204:
+          description: Successfully changed user's password
+        400:
+          $ref: '#/components/responses/BadRequestResponseV1'
+        401:
+          $ref: '#/components/responses/UnauthorizedResponseV1'
+        429:
+          $ref: '#/components/responses/TooManyRequestsResponseV1'
+  /v1/tasks:
+    get:
+      summary: Get user's tasks
+      description: Get user's tasks
+      operationId: getTasks
+      tags:
+        - Tasks
+      parameters:
+        - name: pageNumber
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 1000
+            default: 0
+          description: Zero-based page number, must not be negative
+
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Page size, must be greater than 0
+
+        - name: order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ ASC, DESC ]
+            default: ASC
+          description: Sort direction
+
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ name, completedAt, createdAt ]
+            default: createdAt
+          description: Field to sort by
+
+        - name: completed
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Filter by completion status
+      responses:
+        200:
+          description: Returns user's collections
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllTasksResponseV1'
+        401:
+          $ref: '#/components/responses/UnauthorizedResponseV1'
+        429:
+          $ref: '#/components/responses/TooManyRequestsResponseV1'
+    post:
+      tags:
+        - Tasks
+      summary: Add task
+      operationId: createTask
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequestV1'
+      responses:
+        201:
+          description: Successfully created new task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRepresentationV1'
+        401:
+          $ref: '#/components/responses/UnauthorizedResponseV1'
+        429:
+          $ref: '#/components/responses/TooManyRequestsResponseV1'
+  /v1/tasks/{id}:
+    get:
+      tags:
+        - Tasks
+      summary: Get task by id
+      description: Find user's task with provided id
+      operationId: findTaskById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 7e7f7438-296e-4b10-b8b9-1a3f336f3f0c
+      responses:
+        200:
+          description: Successfully created new task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRepresentationV1'
+        401:
+          $ref: '#/components/responses/UnauthorizedResponseV1'
+        404:
+          $ref: '#/components/responses/UnauthorizedResponseV1'
+        429:
+          $ref: '#/components/responses/TooManyRequestsResponseV1'
+    put:
+      tags:
+        - Tasks
+      summary: Update task
+      description: Update task
+      operationId: updateTask
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 7e7f7438-296e-4b10-b8b9-1a3f336f3f0c
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskV1'
+      responses:
+        200:
+          description: Successfully updated task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRepresentationV1'
+        401:
+          $ref: '#/components/responses/UnauthorizedResponseV1'
+        404:
+          $ref: '#/components/responses/UnauthorizedResponseV1'
+        429:
+          $ref: '#/components/responses/TooManyRequestsResponseV1'
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    GetAllTasksQueryV1:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+          format: int32
+          nullable: false
+          minimum: 0
+          maximum: 1000
+          description: Zero-based page number, must not be negative
+          default: 0
+          example: 0
+        pageSize:
+          type: integer
+          format: int32
+          nullable: false
+          minimum: 0
+          maximum: 100
+          description: The size of the page to be returned, must be greater than 0
+          default: 20
+          example: 50
+        order:
+          type: string
+          nullable: false
+          example: ASC
+          default: ASC
+          enum:
+            - ASC
+            - DESC
+        sort:
+          type: string
+          nullable: false
+          example: completedAt
+          default: createdAt
+          enum:
+            - name
+            - completedAt
+            - createdAt
+        completed:
+          type: boolean
+          nullable: false
+          example: false
+          default: false
+    GetAllTasksResponseV1:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskItemRepresentationV1'
+        page:
+          $ref: '#/components/schemas/PageRepresentation'
+    PageRepresentation:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+          format: int32
+          description: Page number
+          example: 5
+        pageSize:
+          type: integer
+          format: int32
+          description: Amount of elements returned
+          example: 5
+        totalElements:
+          type: integer
+          format: int64
+          description: Total amount of elements
+          example: 50
+        totalPages:
+          type: integer
+          format: int32
+          description: Amount of pages
+          example: 10
+    UpdateTaskV1:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 7e7f7438-296e-4b10-b8b9-1a3f336f3f0c
+        name:
+          type: string
+          example: Buy groceries
+          minLength: 1
+          maxLength: 32
+        description:
+          type: string
+          example: buy bread, milk and some eggs today
+        completed:
+          type: boolean
+          example: false
+    TaskRepresentationV1:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 7e7f7438-296e-4b10-b8b9-1a3f336f3f0c
+        name:
+          type: string
+          example: Buy groceries
+          minLength: 1
+          maxLength: 32
+        description:
+          type: string
+          example: buy bread, milk and some eggs today
+        completed:
+          type: boolean
+          example: false
+        completedAt:
+          description: UTC based date and time when task was completed, nothing if not completed
+          type: string
+          format: datetime
+          example: '2025-11-24T17:32:28Z'
+    CreateTaskRequestV1:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: Buy groceries
+          minLength: 1
+          maxLength: 32
+        description:
+          type: string
+          example: buy bread, milk and some eggs today
+
+
+    TaskItemRepresentationV1:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 7e7f7438-296e-4b10-b8b9-1a3f336f3f0c
+        name:
+          type: string
+          example: Buy groceries
+          minLength: 1
+          maxLength: 32
+        completed:
+          type: boolean
+          example: false
+
+
+
+    PageModelV1:
+      description: Pageable query parameters
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+          format: int32
+          nullable: false
+          minimum: 0
+          maximum: 1000
+          description: Zero-based page number, must not be negative
+          default: 0
+          example: 0
+        pageSize:
+          type: integer
+          format: int32
+          nullable: false
+          minimum: 0
+          maximum: 100
+          description: The size of the page to be returned, must be greater than 0
+          default: 20
+          example: 50
+    CreateUserAccountRequestV1:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: username
+          minLength: 3
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          example: jack@gmail.com
+        password:
+          type: string
+          format: password
+          example: somePassw0rd_
+          minLength: 8
+          maxLength: 64
+    LoginRequestV1:
+      type: object
+      required:
+        - identifier
+        - password
+      properties:
+        identifier:
+          type: string
+          description: Username or email
+          example: username
+        password:
+          type: string
+          format: password
+          example: somePassw0rd_
+          minLength: 8
+          maxLength: 64
+    LoginResponseV1:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30
+    CreatePasswordResetTokenRequestV1:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          example: jack@gmail.com
+    PasswordResetRequestV1:
+      type: object
+      required:
+        - token
+        - password
+      properties:
+        token:
+          type: string
+          example: JlwYk7x2wpS2O1Y3m7dZV6uW0lZQfErq4WwXtZtqFfI
+          minLength: 43
+          maxLength: 43
+          pattern: "^[A-Za-z0-9_-]{43}$"
+        newPassword:
+          type: string
+          format: password
+          description: New password for the account
+          example: somePas8w0rd_
+          minLength: 8
+          maxLength: 64
+    GenerateAccessTokenRequestV1:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30
+    GenerateAccessTokenResponseV1:
+      type: object
+      required:
+        - accessToken
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30
+    DefaultErrorResponseV1:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 500
+        message:
+          type: string
+          example: Something went wrong
+        timestamp:
+          type: string
+          format: date-time
+          example: 2025-10-02T14:30:00Z
+    UserRepresentationV1:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 7e7f7438-296e-4b10-b8b9-1a3f336f3f0c
+        username:
+          type: string
+          example: jack
+        email:
+          type: string
+          format: email
+          example: jack@gmail.com
+    UpdateUserMeV1:
+      type: object
+      required:
+        - username
+        - email
+      properties:
+        username:
+          type: string
+          example: username
+          minLength: 3
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          example: jack@gmail.com
+    ChangePasswordV1:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+          format: password
+          example: somePassw0rd_
+          minLength: 8
+          maxLength: 64
+        newPassword:
+          type: string
+          format: password
+          example: somePassw0rd_
+          minLength: 8
+          maxLength: 64
+  responses:
+    AccessForbiddenResponseV1:
+      description: Access forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DefaultErrorResponseV1'
+    BadRequestResponseV1:
+      description: Request has validation erros
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DefaultErrorResponseV1'
+    UnauthorizedResponseV1:
+      description: Couldn't authorize request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DefaultErrorResponseV1'
+    ConflictResponseV1:
+      description: Some conflict occurred on the server. (Name already taken and etc.)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DefaultErrorResponseV1'
+    TooManyRequestsResponseV1:
+      description: Too many requests.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DefaultErrorResponseV1'
+    NotFoundResponseV1:
+      description: Something were not found on sever
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DefaultErrorResponseV1'
