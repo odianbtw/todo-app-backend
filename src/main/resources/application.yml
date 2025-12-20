@@ -7,7 +7,7 @@ spring:
   application:
     name: todo
   datasource:
-    url: jdbc:postgresql://localhost:5432/todo
+    url: jdbc:postgresql://postgres:5432/todo
     username: todo
     password: todo
 
@@ -25,7 +25,16 @@ spring:
     locations: classpath:/db/migration/postgres
     user: todo
     password: todo
-    url: jdbc:postgresql://localhost:5432/todo
+    url: jdbc:postgresql://postgres:5432/todo
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+      base-path: /actuator
+
+
 
 
 jwt:
